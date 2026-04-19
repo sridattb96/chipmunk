@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,8 +35,17 @@ CHROMA_PATH = BASE_DIR / "chroma_data"
 # Format: http://localhost:8100 (use 8100 to avoid conflict with backend on 8000).
 CHROMA_HTTP_URL = os.getenv("CHROMA_HTTP_URL", "").strip() or None
 
-# Service account path: resolve relative paths against backend dir
-_creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "./credentials/service-account.json")
-if not Path(_creds_path).is_absolute():
-    _creds_path = str(BASE_DIR / _creds_path.lstrip("./"))
-GOOGLE_APPLICATION_CREDENTIALS = _creds_path
+# Service account credentials.
+# On Railway/production: set GOOGLE_APPLICATION_CREDENTIALS_JSON to the full JSON file contents.
+# Locally: set GOOGLE_APPLICATION_CREDENTIALS to the file path (falls back to ./credentials/service-account.json).
+_creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON", "").strip()
+if _creds_json:
+    _tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+    _tmp.write(_creds_json)
+    _tmp.close()
+    GOOGLE_APPLICATION_CREDENTIALS = _tmp.name
+else:
+    _creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "./credentials/service-account.json")
+    if not Path(_creds_path).is_absolute():
+        _creds_path = str(BASE_DIR / _creds_path.lstrip("./"))
+    GOOGLE_APPLICATION_CREDENTIALS = _creds_path

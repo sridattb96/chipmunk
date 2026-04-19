@@ -7,7 +7,7 @@ import { DbSnapshot } from './DbSnapshot';
 import { TopicChains } from './TopicChains';
 import './App.css';
 
-const AUTH_URL = '/auth/google';
+const AUTH_URL = `${import.meta.env.VITE_API_URL || ''}/auth/google`;
 
 function UnauthenticatedApp() {
   return (

@@ -1,5 +1,6 @@
-const API = '/api';
-const AUTH = '/auth';
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+const API = `${BASE_URL}/api`;
+const AUTH = `${BASE_URL}/auth`;
 
 function getToken() {
   return localStorage.getItem('chipmunk_token');
@@ -84,7 +85,9 @@ export function getStreamTranscribeUrl() {
   if (!token) return null;
   // Connect directly to backend for WebSocket (avoids Vite proxy issues)
   const isDev = import.meta.env?.DEV;
-  const wsBase = isDev ? 'ws://localhost:8000' : (window.location.origin.replace(/^http/, 'ws'));
+  const wsBase = isDev
+    ? 'ws://localhost:8000'
+    : (import.meta.env.VITE_API_URL || window.location.origin).replace(/^http/, 'ws');
   return `${wsBase}/api/recordings/stream-transcribe?token=${encodeURIComponent(token)}`;
 }
 
