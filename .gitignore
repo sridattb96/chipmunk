@@ -13,3 +13,5 @@ node_modules/
 # Credentials
 backend/credentials/*.json
 !backend/credentials/.gitkeep
+.vercel
+.env*.local
