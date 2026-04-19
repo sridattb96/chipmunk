@@ -61,18 +61,68 @@ def auth_google():
 
 
 @app.get("/auth/google/callback")
-def auth_callback(code: str):
+async def auth_callback(code: str):
     """Handle OAuth callback, create session, redirect to frontend."""
+    import logging
+    import traceback
+
+    logger = logging.getLogger("chipmunk.auth")
+
     if not code:
+        logger.error("[auth/callback] Missing OAuth code in request")
         raise HTTPException(status_code=400, detail="Missing code")
-    credentials = exchange_code_for_tokens(code)
-    user_info = get_user_info(credentials)
-    google_id = user_info["id"]
-    email = user_info.get("email", "")
-    name = user_info.get("name", "") or email
-    user_id = upsert_user(google_id, email, name, credentials)
-    session_token = create_session(user_id)
-    return RedirectResponse(url=f"{FRONTEND_URL}/?token={session_token}")
+
+    logger.info("[auth/callback] Received OAuth callback — starting token exchange")
+    try:
+        loop = asyncio.get_event_loop()
+
+        # Step 1: Exchange authorization code for tokens (network call to Google).
+        logger.info("[auth/callback] Step 1/4: Exchanging authorization code for tokens")
+        try:
+            credentials = await asyncio.wait_for(
+                loop.run_in_executor(None, lambda: exchange_code_for_tokens(code, timeout=30)),
+                timeout=35,
+            )
+        except asyncio.TimeoutError:
+            logger.error("[auth/callback] Step 1/4 TIMED OUT: exchange_code_for_tokens exceeded 35 s")
+            raise HTTPException(status_code=504, detail="Token exchange timed out")
+        logger.info("[auth/callback] Step 1/4 complete: tokens received")
+
+        # Step 2: Fetch user profile from Google userinfo endpoint.
+        logger.info("[auth/callback] Step 2/4: Fetching user info from Google")
+        try:
+            user_info = await asyncio.wait_for(
+                loop.run_in_executor(None, lambda: get_user_info(credentials, timeout=30)),
+                timeout=35,
+            )
+        except asyncio.TimeoutError:
+            logger.error("[auth/callback] Step 2/4 TIMED OUT: get_user_info exceeded 35 s")
+            raise HTTPException(status_code=504, detail="User info fetch timed out")
+        google_id = user_info["id"]
+        email = user_info.get("email", "")
+        name = user_info.get("name", "") or email
+        logger.info("[auth/callback] Step 2/4 complete: user_info fetched (google_id=%s, email=%s)", google_id, email)
+
+        # Step 3: Upsert user record in SQLite.
+        logger.info("[auth/callback] Step 3/4: Upserting user in database")
+        user_id = upsert_user(google_id, email, name, credentials)
+        logger.info("[auth/callback] Step 3/4 complete: user_id=%s", user_id)
+
+        # Step 4: Create a signed session token.
+        logger.info("[auth/callback] Step 4/4: Creating session token")
+        session_token = create_session(user_id)
+        logger.info("[auth/callback] Step 4/4 complete: session created, redirecting to frontend")
+
+        return RedirectResponse(url=f"{FRONTEND_URL}/?token={session_token}")
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(
+            "[auth/callback] Unhandled exception during OAuth callback:\n%s",
+            traceback.format_exc(),
+        )
+        raise HTTPException(status_code=500, detail=f"Auth callback failed: {exc}") from exc
 
 
 @app.get("/auth/me")

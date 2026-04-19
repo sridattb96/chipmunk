@@ -51,7 +51,15 @@ def get_authorization_url():
     return auth_url
 
 
-def exchange_code_for_tokens(code: str):
+def exchange_code_for_tokens(code: str, timeout: int = 30):
+    """Exchange an OAuth authorization code for credentials.
+
+    Args:
+        code: The authorization code from Google.
+        timeout: HTTP request timeout in seconds (default 30).
+    """
+    import requests
+
     flow = Flow.from_client_config(
         {
             "web": {
@@ -65,16 +73,31 @@ def exchange_code_for_tokens(code: str):
         scopes=SCOPES,
         redirect_uri=f"{BACKEND_URL}/auth/google/callback",
     )
-    flow.fetch_token(code=code)
+    # Mount a session with an explicit timeout so fetch_token never hangs indefinitely.
+    session = requests.Session()
+    session.request = lambda method, url, **kwargs: requests.Session.request(
+        session, method, url, timeout=timeout, **kwargs
+    )
+    flow.fetch_token(code=code, session=session)
     credentials = flow.credentials
     return credentials
 
 
-def get_user_info(credentials) -> dict:
-    """Fetch user info from Google using the credentials."""
+def get_user_info(credentials, timeout: int = 30) -> dict:
+    """Fetch user info from Google using the credentials.
+
+    Args:
+        credentials: OAuth2 credentials object.
+        timeout: HTTP request timeout in seconds (default 30).
+    """
+    import httplib2
+
     from googleapiclient.discovery import build
 
-    service = build("oauth2", "v2", credentials=credentials)
+    # httplib2 is used under the hood by google-api-python-client; set a socket timeout.
+    http = httplib2.Http(timeout=timeout)
+    authed_http = credentials.authorize(http)
+    service = build("oauth2", "v2", http=authed_http)
     userinfo = service.userinfo().get().execute()
     return userinfo
 
