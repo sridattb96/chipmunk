@@ -9,14 +9,72 @@ function formatDate(iso) {
   if (!iso) return '';
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMins = diffMs / 60000;
+
+    if (diffMins < 1) return 'less than a min ago';
+    if (diffMins < 60) return `${Math.floor(diffMins)} minute${Math.floor(diffMins) === 1 ? '' : 's'} ago`;
+
+    const isCurrentYear = d.getFullYear() === now.getFullYear();
+    const monthDay = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (isCurrentYear) return monthDay;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   } catch {
     return iso;
   }
+}
+
+const PILL_COLORS = [
+  { bg: '#fef3c7', text: '#92400e', border: '#fde68a' },  // amber
+  { bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe' },  // blue
+  { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' },  // green
+  { bg: '#fce7f3', text: '#9d174d', border: '#fbcfe8' },  // pink
+  { bg: '#ede9fe', text: '#5b21b6', border: '#ddd6fe' },  // purple
+  { bg: '#ffedd5', text: '#9a3412', border: '#fed7aa' },  // orange
+  { bg: '#e0f2fe', text: '#075985', border: '#bae6fd' },  // sky
+  { bg: '#fdf2f8', text: '#831843', border: '#f9a8d4' },  // rose
+  { bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7' },  // emerald
+  { bg: '#fff7ed', text: '#7c2d12', border: '#fdba74' },  // burnt orange
+  { bg: '#f0f9ff', text: '#0c4a6e', border: '#7dd3fc' },  // light blue
+  { bg: '#fafafa', text: '#292524', border: '#d6d3d1' },  // stone
+  { bg: '#f5f3ff', text: '#4c1d95', border: '#c4b5fd' },  // violet
+  { bg: '#ecfeff', text: '#164e63', border: '#67e8f9' },  // cyan
+  { bg: '#fef9c3', text: '#713f12', border: '#fef08a' },  // yellow
+];
+
+function indexToColor(colorIndex) {
+  return PILL_COLORS[colorIndex % PILL_COLORS.length];
+}
+
+function formatDetailDate(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    if (d.toDateString() === now.toDateString()) return `Today at ${time}`;
+    if (d.toDateString() === yesterday.toDateString()) return `Yesterday at ${time}`;
+    const monthDay = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (d.getFullYear() === now.getFullYear()) return `${monthDay} at ${time}`;
+    return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${time}`;
+  } catch {
+    return iso;
+  }
+}
+
+const WAVEFORM_BARS = [4, 8, 12, 7, 14, 9, 5, 11, 6, 10];
+
+function WaveformIcon() {
+  return (
+    <svg width="29" height="14" viewBox="0 0 29 14" className="item-waveform" aria-hidden>
+      {WAVEFORM_BARS.map((h, i) => (
+        <rect key={i} x={i * 3} y={(14 - h) / 2} width="2" height={h} rx="1" />
+      ))}
+    </svg>
+  );
 }
 
 function useDebounce(value, delay) {
@@ -149,6 +207,7 @@ export function AllRecordings() {
               className={`all-recordings-item ${selected === rec.id ? 'selected' : ''}`}
               onClick={() => navigate('/recordings/' + rec.id)}
             >
+              <WaveformIcon />
               <span className="item-name">{rec.name}</span>
               <span className="item-meta">
                 {rec.duration} · {formatDate(rec.created_at)}
@@ -159,6 +218,25 @@ export function AllRecordings() {
         <main className="all-recordings-detail">
           {detail ? (
             <>
+              <div className="detail-header">
+                <h1 className="detail-title">{detail.name}</h1>
+                <p className="detail-header-meta">{formatDetailDate(detail.created_at)} · {detail.duration}</p>
+              </div>
+              <div className="detail-audio-placeholder" aria-hidden>
+                <div className="audio-waveform-bars">
+                  {Array.from({ length: 40 }, (_, i) => {
+                    const h = 8 + Math.abs(Math.sin(i * 1.7 + 1) * 22 + Math.sin(i * 0.9) * 10);
+                    return <span key={i} className={`audio-bar ${i < 14 ? 'audio-bar-played' : ''}`} style={{ height: `${h}px` }} />;
+                  })}
+                </div>
+                <div className="audio-controls-row">
+                  <div className="audio-play-btn" />
+                  <div className="audio-progress-track">
+                    <div className="audio-progress-fill" />
+                  </div>
+                  <span className="audio-time">0:00 / {detail.duration}</span>
+                </div>
+              </div>
               <div className="detail-content">
                 <section>
                   <h2 className="detail-heading">Summary</h2>
@@ -168,9 +246,15 @@ export function AllRecordings() {
                   <section className="detail-topics-section">
                     <span className="detail-topics-label">Topics:</span>
                     <div className="detail-topics">
-                      {detail.topics.map((t, i) => (
-                        <span key={i} className="topic-chip">{t}</span>
-                      ))}
+                      {detail.topics.map((t, i) => {
+                        const colorIdx = detail.topic_colors?.[t] ?? i;
+                        const c = indexToColor(colorIdx);
+                        return (
+                          <span key={i} className="topic-chip" style={{ background: c.bg, color: c.text, borderColor: c.border }}>
+                            {t}
+                          </span>
+                        );
+                      })}
                     </div>
                   </section>
                 )}

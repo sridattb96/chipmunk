@@ -4,8 +4,8 @@
   --surface: #1a2332;
   --text: #e6edf3;
   --text-muted: #8b949e;
-  --accent: #58a6ff;
-  --accent-hover: #79b8ff;
+  --accent: oklch(68% 0.18 133);
+  --accent-hover: oklch(63% 0.18 133);
   --danger: #f85149;
   --success: #3fb950;
   --radius: 8px;

@@ -109,6 +109,23 @@ def init_db():
             conn.commit()
         except sqlite3.OperationalError:
             pass
+        # Migration: add color_index column to topics if missing
+        try:
+            conn.execute("ALTER TABLE topics ADD COLUMN color_index INTEGER NOT NULL DEFAULT 0")
+            conn.commit()
+            # Assign sequential color_index per recording for existing rows
+            rows = conn.execute(
+                "SELECT id, call_id FROM topics ORDER BY call_id, created_at, id"
+            ).fetchall()
+            counts: dict[str, int] = {}
+            for r in rows:
+                cid = r["call_id"]
+                idx = counts.get(cid, 0)
+                conn.execute("UPDATE topics SET color_index = ? WHERE id = ?", (idx, r["id"]))
+                counts[cid] = idx + 1
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass
         # Rebuild FTS index from content table (fixes empty index if DB predated FTS)
         try:
             conn.execute("INSERT INTO recordings_fts(recordings_fts) VALUES('rebuild')")
@@ -260,9 +277,12 @@ def add_recording(
 
 
 def _insert_topics(conn: sqlite3.Connection, call_id: str, topics_data: list[dict], embedding_version: int = 0):
-    """Insert topic rows for a call."""
+    """Insert topic rows for a call, assigning sequential color_index per recording."""
     created_at = datetime.utcnow().isoformat()
-    for t in topics_data:
+    existing = conn.execute(
+        "SELECT COUNT(*) FROM topics WHERE call_id = ?", (call_id,)
+    ).fetchone()[0]
+    for i, t in enumerate(topics_data):
         label = (t.get("label") or "").strip()
         if not label:
             continue
@@ -270,10 +290,10 @@ def _insert_topics(conn: sqlite3.Connection, call_id: str, topics_data: list[dic
         topic_id = str(uuid.uuid4())
         conn.execute(
             """
-            INSERT INTO topics (id, call_id, canonical_topic_id, label, description, embedding_version, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO topics (id, call_id, canonical_topic_id, label, description, embedding_version, color_index, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (topic_id, call_id, None, label, description, embedding_version, created_at),
+            (topic_id, call_id, None, label, description, embedding_version, existing + i, created_at),
         )
     conn.commit()
 
@@ -302,8 +322,13 @@ def get_recording(rec_id: str, user_id: int) -> dict | None:
         ).fetchone()
         if not row:
             return None
+        topic_rows = conn.execute(
+            "SELECT label, color_index FROM topics WHERE call_id = ? ORDER BY color_index",
+            (rec_id,),
+        ).fetchall()
     topics = json.loads(row["topics"]) if row["topics"] else []
     decisions = json.loads(row["decisions"]) if row["decisions"] else []
+    topic_colors = {t["label"]: t["color_index"] for t in topic_rows}
     return {
         "id": row["id"],
         "name": row["name"],
@@ -311,6 +336,7 @@ def get_recording(rec_id: str, user_id: int) -> dict | None:
         "created_at": row["created_at"],
         "summary": row["summary"],
         "topics": topics,
+        "topic_colors": topic_colors,
         "tone": row["tone"],
         "transcript": row["transcript"],
         "decisions": decisions,

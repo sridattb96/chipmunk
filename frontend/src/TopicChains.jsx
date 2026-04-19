@@ -104,6 +104,12 @@ export function TopicChains() {
           {!selectedGroup ? (
             <p className="topic-chains-empty">Select a topic group to view the call chain.</p>
           ) : (
+            <>
+              <div className="topic-chains-col-headers">
+                <span>Recording</span>
+                <span>Description</span>
+                <span>Insights</span>
+              </div>
             <div className="topic-chains-chain">
               {selectedGroup.recordingIds.map((recId, idx) => {
                 const rec = data.recordingsById?.[recId];
@@ -139,6 +145,7 @@ export function TopicChains() {
                 );
               })}
             </div>
+            </>
           )}
         </main>
       </div>

@@ -76,12 +76,12 @@
 }
 
 .topic-chains-main h2 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 2rem 0;
   font-size: 1rem;
   font-weight: 600;
   color: #374151;
   border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -116,9 +116,9 @@
 }
 
 .topic-chains-item-active {
-  background: #eff6ff;
-  border-color: #2563eb;
-  color: #1e40af;
+  background: oklch(68% 0.18 133 / 0.08);
+  border-color: oklch(68% 0.18 133);
+  color: oklch(45% 0.18 133);
 }
 
 .topic-chains-item-title {
@@ -134,7 +134,7 @@
 }
 
 .topic-chains-item-active .topic-chains-item-date {
-  color: #3b82f6;
+  color: oklch(58% 0.18 133);
 }
 
 .topic-chains-main {
@@ -142,6 +142,23 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.5rem;
+}
+
+.topic-chains-col-headers {
+  display: grid;
+  grid-template-columns: 180px 1fr 200px;
+  gap: 1.5rem;
+  padding: 0 0 0.5rem 0;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topic-chains-col-headers span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
 }
 
 .topic-chains-chain {
