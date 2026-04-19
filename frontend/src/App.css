@@ -1,0 +1,392 @@
+:root {
+  --font-sn-pro: "SN Pro", sans-serif;
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --accent-hover: #79b8ff;
+  --danger: #f85149;
+  --success: #3fb950;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Form controls use system font by default; force inheritance for site-wide font */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sn-pro);
+  font-optical-sizing: auto;
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-muted);
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+/* All Recordings page: full-width nav bar, light theme */
+.app-all-recordings .header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem 2rem;
+  margin-bottom: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.app-all-recordings {
+  max-width: 100%;
+  padding: 0;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.header-brand {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.app-all-recordings .header-brand {
+  font-size: 1.25rem;
+  margin: 0;
+  color: #1f2937;
+}
+
+.app-all-recordings .nav-links {
+  margin-top: 0;
+}
+
+.app-all-recordings .nav-link {
+  color: #6b7280;
+}
+
+.app-all-recordings .nav-link:hover {
+  color: #374151;
+}
+
+.app-all-recordings .nav-link.active,
+.app-all-recordings a.nav-link[aria-current="page"] {
+  color: #2563eb;
+}
+
+.app-all-recordings .user-row {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.header-link {
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.header-link:hover {
+  color: #2563eb;
+}
+
+.app-all-recordings .user-email {
+  color: #6b7280;
+}
+
+.app-all-recordings .btn-text {
+  color: #6b7280;
+}
+
+.app-all-recordings .btn-text:hover {
+  color: #374151;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.header p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  color: var(--text);
+}
+
+.nav-link.active,
+a.nav-link[aria-current="page"] {
+  color: var(--accent);
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.user-email {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.auth-section {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid #30363d;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #21262d;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn-text {
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.btn-text:hover {
+  color: var(--text);
+}
+
+.btn-google {
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.recorder {
+  margin-bottom: 1.5rem;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  background: var(--danger);
+  border-radius: 50%;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.status {
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.status-loading {
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--accent);
+}
+
+.status-error {
+  background: rgba(248, 81, 73, 0.15);
+  color: var(--danger);
+}
+
+.recording-result {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #30363d;
+}
+
+.recording-result section {
+  margin-bottom: 1.5rem;
+}
+
+.recording-result h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary,
+.transcript {
+  background: var(--surface);
+  padding: 1rem;
+  border-radius: var(--radius);
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.transcript {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.actions {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.8;
+}
+
+.actions li {
+  margin-bottom: 0.25rem;
+}
+
+.save-section {
+  margin-top: 2rem;
+}
+
+.saved-badge {
+  color: var(--success);
+  font-weight: 500;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.modal h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.modal p {
+  color: var(--text-muted);
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+}
+
+.modal label {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.modal label input {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  background: var(--bg);
+  border: 1px solid #30363d;
+  border-radius: var(--radius);
+  color: var(--text);
+}
+
+.modal .error {
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}

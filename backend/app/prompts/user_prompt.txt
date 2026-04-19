@@ -1,0 +1,36 @@
+Return JSON in this format:
+
+{
+    "summary": "string",
+    "topics": [
+        {
+            "label": "string",
+            "description": "1-2 sentence description of how this topic appeared in this meeting"
+        }
+    ],
+    "decisions": ["None made"]
+}
+
+Constraints:
+
+Summary:
+- Max 200 words
+- Focus on key discussions, decisions, and open questions
+- No generic phrases like "The team discussed various topics"
+
+Topics:
+- 3–8 topics maximum
+- Each label must be 2–5 words
+- Use Title Case
+- Avoid synonyms or redundant labels
+- Mix conceptual topics (e.g., "Vendor Selection") with concrete entities (e.g., "Hot tub", "Aframe") when central to the call
+- Do not include people names as topics
+- Do not include action items as topics
+- Avoid sentence-length labels
+- Only include topics that materially shaped the conversation.
+
+Decisions:
+- 2-3 decisions maximum.
+- Keep it concise.
+
+Output must be valid JSON. No commentary. If the transcript contains any discussion, your summary and topics must be non-empty.
