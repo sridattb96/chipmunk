@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     import logging
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     init_db()
-    seed_dummy_recordings()
+    # seed_dummy_recordings()  # Temporarily disabled to diagnose startup hang
     print(f"DEEPGRAM_API_KEY: {'SET' if DEEPGRAM_API_KEY else 'EMPTY'}")
     yield
 
