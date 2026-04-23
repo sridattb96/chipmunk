@@ -50,21 +50,9 @@ def require_auth(authorization: str | None = Header(None)):
     return user_id
 
 
-# --- Health ---
-
-
-@app.get("/health")
-def health_check():
-    """Liveness probe — confirms the backend process is up and accepting requests."""
-    return {"ok": True}
-
-
-# --- Auth ---
-
-
 @app.get("/health")
 def health():
-    """Health check endpoint."""
+    """Health check — confirms the process is up and shows key env var state."""
     from app.config import GOOGLE_CLIENT_ID, BACKEND_URL, FRONTEND_URL
     return {
         "status": "ok",
@@ -72,6 +60,9 @@ def health():
         "backend_url": BACKEND_URL,
         "frontend_url": FRONTEND_URL,
     }
+
+
+# --- Auth ---
 
 
 @app.get("/auth/google")
