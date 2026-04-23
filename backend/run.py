@@ -1,11 +1,5 @@
 import os
-import threading
 import uvicorn
-
-
-def start_worker():
-    from app.worker import main
-    main()
 
 
 if __name__ == "__main__":
