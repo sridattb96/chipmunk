@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Depends, Header, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Depends, Header, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ from app.auth import (
 )
 from app.config import FRONTEND_URL, GOOGLE_CLIENT_ID, DEEPGRAM_API_KEY
 from app.db import init_db, seed_dummy_recordings
-from app.services import save_to_drive, extract_structured_data, transcribe_audio, TRANSCRIPTION_MODE, get_topic_chains
+from app.services import save_to_drive, extract_structured_data, transcribe_audio, TRANSCRIPTION_MODE, get_topic_chains, embed_recording
 from app.session import create_session, get_session
 
 
@@ -62,10 +62,29 @@ def health_check():
 # --- Auth ---
 
 
+@app.get("/health")
+def health():
+    """Health check endpoint."""
+    from app.config import GOOGLE_CLIENT_ID, BACKEND_URL, FRONTEND_URL
+    return {
+        "status": "ok",
+        "google_client_id_set": bool(GOOGLE_CLIENT_ID),
+        "backend_url": BACKEND_URL,
+        "frontend_url": FRONTEND_URL,
+    }
+
+
 @app.get("/auth/google")
 def auth_google():
     """Redirect user to Google OAuth."""
-    url = get_authorization_url()
+    try:
+        url = get_authorization_url()
+    except Exception as exc:
+        import logging, traceback
+        logging.getLogger("chipmunk.auth").error(
+            "[auth/google] Failed to build authorization URL:\n%s", traceback.format_exc()
+        )
+        raise HTTPException(status_code=500, detail=f"OAuth config error: {exc}") from exc
     return RedirectResponse(url=url)
 
 
@@ -88,7 +107,7 @@ async def auth_callback(code: str):
 
     logger.info("[auth/callback] Received OAuth callback — starting token exchange")
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         # Step 1: Exchange authorization code for tokens (network call to Google).
         logger.info("[auth/callback] Step 1/4: Exchanging authorization code for tokens")
@@ -191,19 +210,6 @@ def db_snapshot(user_id: int = Depends(require_auth)):
                     ).fetchall()
                 ],
             }
-            rows = conn.execute(
-                "SELECT status, COUNT(*) as cnt FROM embedding_jobs GROUP BY status"
-            ).fetchall()
-            total_jobs = sum(r[1] for r in rows)
-            by_status = {r[0]: r[1] for r in rows}
-            recent = [dict(row) for row in conn.execute(
-                "SELECT id, call_id, status, created_at, error FROM embedding_jobs ORDER BY created_at DESC LIMIT 10"
-            ).fetchall()]
-            sql["embedding_jobs"] = {
-                "total": total_jobs,
-                "by_status": by_status,
-                "recent": recent,
-            }
     except Exception as e:
         sql["error"] = str(e)
 
@@ -222,106 +228,7 @@ def db_snapshot(user_id: int = Depends(require_auth)):
     except Exception as e:
         chroma["error"] = str(e)
 
-    similar_calls = []
-    similar_calls_skipped = False
-    try:
-        import time
-        from app.chromadb_store import get_collection as get_chroma_coll, query as chroma_query
-
-        with get_connection() as conn:
-            done_calls = [
-                r["call_id"]
-                for r in conn.execute(
-                    "SELECT call_id FROM embedding_jobs WHERE status = 'done' ORDER BY created_at DESC LIMIT 8"
-                ).fetchall()
-            ]
-
-        if done_calls:
-            def _compute_similar(entity_type: str, id_suffix: str):
-                coll = get_chroma_coll()
-                get_result = coll.get(where={"entity_type": entity_type}, include=["embeddings", "metadatas"])
-                if not get_result["ids"]:
-                    return []
-                id_to_embedding = dict(zip(get_result["ids"], get_result["embeddings"]))
-                id_to_call = {
-                    sid: (get_result["metadatas"] or [{}])[i].get("call_id", sid.replace(id_suffix, ""))
-                    for i, sid in enumerate(get_result["ids"])
-                }
-                done_set = set(done_calls)
-                raw_similar = []
-                for vec_id, embedding in id_to_embedding.items():
-                    anchor_call = id_to_call.get(vec_id)
-                    if not anchor_call or anchor_call not in done_set:
-                        continue
-                    q = chroma_query(
-                        query_embeddings=[embedding],
-                        n_results=6,
-                        where={"entity_type": entity_type},
-                    )
-                    if not q["ids"] or not q["ids"][0]:
-                        continue
-                    seen = {anchor_call}
-                    similar = []
-                    for meta, dist in zip(q["metadatas"][0] or [], q["distances"][0] or []):
-                        cid = (meta or {}).get("call_id")
-                        if cid and cid not in seen:
-                            seen.add(cid)
-                            similar.append({"call_id": cid, "distance": round(dist, 4)})
-                            if len(similar) >= 5:
-                                break
-                    if similar:
-                        raw_similar.append({"anchor_call": anchor_call, "similar": similar})
-                all_cids = set(done_calls)
-                for item in raw_similar:
-                    all_cids.add(item["anchor_call"])
-                    for s in item["similar"]:
-                        all_cids.add(s["call_id"])
-                name_map = {}
-                if all_cids:
-                    with get_connection() as conn:
-                        placeholders = ",".join("?" * len(all_cids))
-                        for row in conn.execute(
-                            f"SELECT id, name FROM recordings WHERE id IN ({placeholders})",
-                            list(all_cids),
-                        ).fetchall():
-                            name_map[row["id"]] = row["name"]
-                return [
-                    {
-                        "anchor": {"call_id": item["anchor_call"], "name": name_map.get(item["anchor_call"], item["anchor_call"])},
-                        "similar": [{"call_id": s["call_id"], "name": name_map.get(s["call_id"], s["call_id"]), "distance": s["distance"]} for s in item["similar"]],
-                    }
-                    for item in raw_similar
-                ]
-
-            def _try_compute():
-                for entity_type, id_suffix in [("combined", "_combined"), ("summary", "_summary")]:
-                    try:
-                        result = _compute_similar(entity_type, id_suffix)
-                        if result:
-                            return result
-                    except Exception as e:
-                        err_str = str(e)
-                        if "Error finding id" in err_str or "Error executing plan" in err_str:
-                            continue
-                        raise
-                return []
-
-            for delay in [0, 2, 5, 10]:
-                if delay > 0:
-                    time.sleep(delay)
-                try:
-                    similar_calls = _try_compute()
-                    break
-                except Exception as e:
-                    if delay == 10:
-                        print(f"[DB snapshot] Similar calls failed after retries: {e}")
-            else:
-                similar_calls_skipped = True
-                similar_calls = []
-    except Exception as e:
-        similar_calls = [{"error": str(e)}]
-
-    return {"sql": sql, "chroma": chroma, "similar_calls": similar_calls, "similar_calls_skipped": similar_calls_skipped}
+    return {"sql": sql, "chroma": chroma}
 
 
 @app.get("/api/topic-chains")
@@ -493,10 +400,11 @@ class SaveTranscriptRequest(BaseModel):
 @app.post("/api/recordings/save-transcript")
 async def save_transcript(
     body: SaveTranscriptRequest,
+    background_tasks: BackgroundTasks,
     user_id: int = Depends(require_auth),
 ):
     """Save a recording from stream mode (transcript only, no audio upload)."""
-    from app.db import add_recording, create_embedding_job
+    from app.db import add_recording
 
     try:
         transcript = (body.transcript or "").strip()
@@ -523,7 +431,7 @@ async def save_transcript(
             structured_topics=topics_data,
             decisions=decisions,
         )
-        create_embedding_job(recording_id)
+        background_tasks.add_task(embed_recording, recording_id)
         return {
             "id": recording_id,
             "transcript": transcript,
@@ -538,6 +446,7 @@ async def save_transcript(
 
 @app.post("/api/recordings/upload")
 async def upload_recording(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     name: str = Form("Recording"),
     duration: str = Form("0:00"),
@@ -577,8 +486,7 @@ async def upload_recording(
         decisions=decisions,
     )
 
-    from app.db import create_embedding_job
-    create_embedding_job(recording_id)
+    background_tasks.add_task(embed_recording, recording_id)
 
     return {
         "id": recording_id,

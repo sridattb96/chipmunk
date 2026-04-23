@@ -85,16 +85,6 @@ def init_db():
                 FOREIGN KEY (call_id) REFERENCES recordings(id)
             );
 
-            CREATE TABLE IF NOT EXISTS embedding_jobs (
-                id TEXT PRIMARY KEY,
-                call_id TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                error TEXT,
-                FOREIGN KEY (call_id) REFERENCES recordings(id)
-            );
-
             CREATE TABLE IF NOT EXISTS topic_chains_cache (
                 user_id     INTEGER PRIMARY KEY,
                 version     TEXT    NOT NULL,
@@ -372,59 +362,8 @@ def _search_recordings_like(conn: sqlite3.Connection, user_id: int, query: str, 
     return [{"id": r["id"], "name": r["name"], "duration": r["duration"], "created_at": r["created_at"]} for r in rows]
 
 
-# --- Embedding jobs ---
-
-
-def create_embedding_job(call_id: str) -> str:
-    """Create a pending embedding job. Returns job id."""
-    init_db()
-    job_id = str(uuid.uuid4())
-    now = datetime.utcnow().isoformat()
-    with get_connection() as conn:
-        conn.execute(
-            """
-            INSERT INTO embedding_jobs (id, call_id, status, created_at, updated_at)
-            VALUES (?, ?, 'pending', ?, ?)
-            """,
-            (job_id, call_id, now, now),
-        )
-        conn.commit()
-    return job_id
-
-
-def get_pending_embedding_jobs(limit: int = 5) -> list[dict]:
-    """Get pending jobs for processing, ordered by created_at."""
-    with get_connection() as conn:
-        rows = conn.execute(
-            """
-            SELECT id, call_id, status, created_at
-            FROM embedding_jobs
-            WHERE status = 'pending'
-            ORDER BY created_at ASC
-            LIMIT ?
-            """,
-            (limit,),
-        ).fetchall()
-    return [{"id": r["id"], "call_id": r["call_id"], "status": r["status"], "created_at": r["created_at"]} for r in rows]
-
-
-def update_embedding_job(job_id: str, status: str, error: str | None = None) -> None:
-    """Update job status (processing, done, failed)."""
-    now = datetime.utcnow().isoformat()
-    with get_connection() as conn:
-        conn.execute(
-            """
-            UPDATE embedding_jobs
-            SET status = ?, updated_at = ?, error = ?
-            WHERE id = ?
-            """,
-            (status, now, error or "", job_id),
-        )
-        conn.commit()
-
-
 def get_recording_with_topics_for_embedding(call_id: str) -> dict | None:
-    """Fetch recording + topics by call_id (for worker; no user_id check)."""
+    """Fetch recording + topics by call_id (no user_id check — used for background embedding)."""
     with get_connection() as conn:
         row = conn.execute(
             "SELECT id, user_id, summary, created_at FROM recordings WHERE id = ?",
@@ -492,13 +431,10 @@ def search_recordings(user_id: int, query: str, limit: int = 50) -> list[dict]:
 
 
 def get_embedding_version(user_id: int) -> str:
-    """Hash of all call_ids with completed embeddings for this user. Changes when new embeddings land."""
+    """Hash of all recording IDs for this user. Cache invalidates when recordings are added."""
     with get_connection() as conn:
         rows = conn.execute(
-            """SELECT DISTINCT r.id FROM recordings r
-               JOIN embedding_jobs j ON j.call_id = r.id
-               WHERE r.user_id = ? AND j.status = 'done'
-               ORDER BY r.id""",
+            "SELECT id FROM recordings WHERE user_id = ? ORDER BY id",
             (user_id,),
         ).fetchall()
     key = ",".join(r[0] for r in rows)

@@ -5,7 +5,6 @@ from typing import Literal
 from urllib.parse import urlparse
 
 import chromadb
-from chromadb.config import Settings
 
 from app.config import CHROMA_PATH, CHROMA_HTTP_URL
 
@@ -17,24 +16,19 @@ _client = None
 
 
 def _get_client():
-    """Return ChromaDB client: HttpClient when CHROMA_HTTP_URL is set, else PersistentClient.
-
-    Using a single Chroma HTTP server (CHROMA_HTTP_URL) avoids multi-process SQLite corruption
-    when both the FastAPI backend and embedding worker access ChromaDB.
-    """
+    """Return ChromaDB client: HttpClient when CHROMA_HTTP_URL is set, else PersistentClient."""
     global _client
     if _client is not None:
         return _client
-    settings = Settings(anonymized_telemetry=False)
     if CHROMA_HTTP_URL:
         parsed = urlparse(CHROMA_HTTP_URL)
         host = parsed.hostname or "localhost"
         port = parsed.port or (443 if parsed.scheme == "https" else 8000)
         ssl = parsed.scheme == "https"
-        _client = chromadb.HttpClient(host=host, port=port, ssl=ssl, settings=settings)
+        _client = chromadb.HttpClient(host=host, port=port, ssl=ssl)
     else:
         CHROMA_PATH.mkdir(parents=True, exist_ok=True)
-        _client = chromadb.PersistentClient(path=str(CHROMA_PATH), settings=settings)
+        _client = chromadb.PersistentClient(path=str(CHROMA_PATH))
     return _client
 
 

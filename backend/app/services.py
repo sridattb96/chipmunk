@@ -273,6 +273,37 @@ def extract_structured_data(transcript: str) -> dict:
     return result
 
 
+def embed_recording(recording_id: str) -> None:
+    """Embed a recording's summary+topics and store in ChromaDB. Designed for BackgroundTasks."""
+    from app.db import get_recording_with_topics_for_embedding
+    from app.chromadb_store import add_records
+    try:
+        rec = get_recording_with_topics_for_embedding(recording_id)
+        if not rec:
+            return
+        summary_text = (rec["summary"] or "").strip()
+        topic_lines = [f"- {t['label']}" for t in rec["topics"] if (t.get("label") or "").strip()]
+        topics_block = "\n".join(topic_lines) if topic_lines else "- (none)"
+        combined_text = f"Summary: {summary_text or '(none)'}\n\nTopics:\n{topics_block}"
+        if not combined_text.strip():
+            return
+        vec = embed_text(combined_text)
+        add_records(
+            ids=[f"{recording_id}_combined"],
+            vectors=[vec],
+            metadatas=[{
+                "entity_type": "combined",
+                "call_id": recording_id,
+                "topic_id": "",
+                "canonical_topic_id": "",
+                "org_id": f"user_{rec['user_id']}",
+                "created_at": rec["created_at"],
+            }],
+        )
+    except Exception as e:
+        logger.error("[embed_recording] Failed to embed %s: %s", recording_id, e)
+
+
 def embed_text(text: str) -> list[float]:
     """Generate embedding for text using OpenAI text-embedding-3-large."""
     if not text or not text.strip():
