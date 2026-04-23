@@ -50,6 +50,15 @@ def require_auth(authorization: str | None = Header(None)):
     return user_id
 
 
+# --- Health ---
+
+
+@app.get("/health")
+def health_check():
+    """Liveness probe — confirms the backend process is up and accepting requests."""
+    return {"ok": True}
+
+
 # --- Auth ---
 
 
@@ -68,6 +77,11 @@ async def auth_callback(code: str):
 
     logger = logging.getLogger("chipmunk.auth")
 
+    # ── Earliest possible log — fires before any async work. If this line is
+    # absent from the logs the request never reached this handler (proxy/routing
+    # issue upstream of FastAPI).
+    logger.info("[auth/callback] Handler entered — code present: %s", bool(code))
+
     if not code:
         logger.error("[auth/callback] Missing OAuth code in request")
         raise HTTPException(status_code=400, detail="Missing code")
@@ -79,10 +93,12 @@ async def auth_callback(code: str):
         # Step 1: Exchange authorization code for tokens (network call to Google).
         logger.info("[auth/callback] Step 1/4: Exchanging authorization code for tokens")
         try:
+            logger.info("[auth/callback] Step 1/4: entering wait_for (timeout=35 s)")
             credentials = await asyncio.wait_for(
                 loop.run_in_executor(None, lambda: exchange_code_for_tokens(code, timeout=30)),
                 timeout=35,
             )
+            logger.info("[auth/callback] Step 1/4: wait_for returned successfully")
         except asyncio.TimeoutError:
             logger.error("[auth/callback] Step 1/4 TIMED OUT: exchange_code_for_tokens exceeded 35 s")
             raise HTTPException(status_code=504, detail="Token exchange timed out")
@@ -91,10 +107,12 @@ async def auth_callback(code: str):
         # Step 2: Fetch user profile from Google userinfo endpoint.
         logger.info("[auth/callback] Step 2/4: Fetching user info from Google")
         try:
+            logger.info("[auth/callback] Step 2/4: entering wait_for (timeout=35 s)")
             user_info = await asyncio.wait_for(
                 loop.run_in_executor(None, lambda: get_user_info(credentials, timeout=30)),
                 timeout=35,
             )
+            logger.info("[auth/callback] Step 2/4: wait_for returned successfully")
         except asyncio.TimeoutError:
             logger.error("[auth/callback] Step 2/4 TIMED OUT: get_user_info exceeded 35 s")
             raise HTTPException(status_code=504, detail="User info fetch timed out")
