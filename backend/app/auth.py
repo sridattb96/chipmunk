@@ -84,20 +84,10 @@ def exchange_code_for_tokens(code: str, timeout: int = 30):
 
 
 def get_user_info(credentials, timeout: int = 30) -> dict:
-    """Fetch user info from Google using the credentials.
-
-    Args:
-        credentials: OAuth2 credentials object.
-        timeout: HTTP request timeout in seconds (default 30).
-    """
-    import httplib2
-
+    """Fetch user info from Google using the credentials."""
     from googleapiclient.discovery import build
 
-    # httplib2 is used under the hood by google-api-python-client; set a socket timeout.
-    http = httplib2.Http(timeout=timeout)
-    authed_http = credentials.authorize(http)
-    service = build("oauth2", "v2", http=authed_http)
+    service = build("oauth2", "v2", credentials=credentials)
     userinfo = service.userinfo().get().execute()
     return userinfo
 
