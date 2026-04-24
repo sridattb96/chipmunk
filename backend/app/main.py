@@ -228,6 +228,8 @@ def topic_chains(user_id: int = Depends(require_auth)):
     try:
         return get_topic_chains(user_id)
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 

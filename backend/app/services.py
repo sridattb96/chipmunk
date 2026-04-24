@@ -363,6 +363,9 @@ def _compute_topic_chains(user_id: int) -> dict:
     org_id = f"user_{user_id}"
     coll = get_collection()
 
+    if coll.count() == 0:
+        return {"groups": [], "recordingsById": {}}
+
     # Try combined first, fallback to summary
     # ChromaDB requires single top-level operator; use $and for multiple conditions
     for entity_type, id_suffix in [("combined", "_combined"), ("summary", "_summary")]:
