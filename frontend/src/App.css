@@ -4,8 +4,8 @@
   --surface: #1a2332;
   --text: #e6edf3;
   --text-muted: #8b949e;
-  --accent: oklch(68% 0.18 133);
-  --accent-hover: oklch(63% 0.18 133);
+  --accent: #991E0A;
+  --accent-hover: #7a1708;
   --danger: #f85149;
   --success: #3fb950;
   --radius: 8px;
@@ -49,7 +49,7 @@ body {
   margin-bottom: 2rem;
 }
 
-/* All Recordings page: full-width nav bar, light theme */
+/* All Recordings page: full-width nav bar, dark theme */
 .app-all-recordings .header {
   display: flex;
   align-items: center;
@@ -58,14 +58,16 @@ body {
   max-width: 100%;
   padding: 1rem 2rem;
   margin-bottom: 0;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: rgba(15, 20, 25, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #30363d;
 }
 
 .app-all-recordings {
   max-width: 100%;
   padding: 0;
-  background: #fafafa;
+  background: transparent;
   min-height: 100vh;
 }
 
@@ -78,7 +80,7 @@ body {
 .app-all-recordings .header-brand {
   font-size: 1.25rem;
   margin: 0;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .app-all-recordings .nav-links {
@@ -86,16 +88,16 @@ body {
 }
 
 .app-all-recordings .nav-link {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .app-all-recordings .nav-link:hover {
-  color: #374151;
+  color: var(--text);
 }
 
 .app-all-recordings .nav-link.active,
 .app-all-recordings a.nav-link[aria-current="page"] {
-  color: #2563eb;
+  color: var(--accent);
 }
 
 .app-all-recordings .user-row {
@@ -104,25 +106,25 @@ body {
 }
 
 .header-link {
-  color: #6b7280;
+  color: var(--text-muted);
   text-decoration: none;
   font-size: 0.9rem;
 }
 
 .header-link:hover {
-  color: #2563eb;
+  color: var(--accent);
 }
 
 .app-all-recordings .user-email {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .app-all-recordings .btn-text {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .app-all-recordings .btn-text:hover {
-  color: #374151;
+  color: var(--text);
 }
 
 .header h1 {

@@ -13,7 +13,7 @@ function UnauthenticatedApp() {
   return (
     <div className="app">
       <header className="header">
-        <h1>Chipmunk</h1>
+        <h1>Threadform</h1>
         <p>Record calls, get transcripts and summaries, save to Drive.</p>
       </header>
       <div className="auth-section">

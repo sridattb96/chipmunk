@@ -17,7 +17,7 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .db-snapshot-actions {
@@ -29,14 +29,15 @@
 .db-snapshot-actions button {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #30363d;
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
 
 .db-snapshot-actions button:hover:not(:disabled) {
-  background: #f9fafb;
+  background: #21262d;
 }
 
 .db-snapshot-actions button:disabled {
@@ -45,7 +46,7 @@
 }
 
 .db-snapshot-back {
-  color: #2563eb;
+  color: var(--accent);
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -58,17 +59,17 @@
 .db-snapshot-error {
   padding: 2rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .db-snapshot-muted {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .db-snapshot-error {
-  color: #dc2626;
-  background: #fef2f2;
+  color: #f85149;
+  background: rgba(248, 81, 73, 0.1);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -86,19 +87,19 @@
 }
 
 .db-snapshot-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border: 1px solid #30363d;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .db-snapshot-card h2 {
   margin: 0 0 1.25rem 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--text);
+  border-bottom: 1px solid #30363d;
   padding-bottom: 0.75rem;
 }
 
@@ -114,13 +115,13 @@
   margin: 0 0 0.5rem 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .db-snapshot-count {
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .db-snapshot-table {
@@ -133,22 +134,22 @@
 .db-snapshot-table td {
   padding: 0.5rem 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #f3f4f6;
-  color: #374151;
+  border-bottom: 1px solid #21262d;
+  color: #c9d1d9;
 }
 
 .db-snapshot-table th {
   font-weight: 600;
-  color: #1f2937;
-  background: #f9fafb;
+  color: var(--text);
+  background: #161b22;
 }
 
 .db-snapshot-table code {
   font-size: 0.75rem;
-  background: #f3f4f6;
+  background: #21262d;
   padding: 0.15rem 0.35rem;
   border-radius: 4px;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .db-snapshot-preview {
@@ -159,7 +160,7 @@
 }
 
 .db-snapshot-error-cell {
-  color: #dc2626;
+  color: #f85149;
   max-width: 300px;
 }
 
@@ -173,22 +174,22 @@
 .db-snapshot-badge {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
-  background: #e5e7eb;
+  background: #21262d;
   border-radius: 4px;
-  color: #374151;
+  color: #c9d1d9;
 }
 
 .db-snapshot-status-done {
-  color: #059669;
+  color: #3fb950;
 }
 
 .db-snapshot-status-pending,
 .db-snapshot-status-processing {
-  color: #d97706;
+  color: #d29922;
 }
 
 .db-snapshot-status-failed {
-  color: #dc2626;
+  color: #f85149;
 }
 
 .db-similar-calls {
@@ -199,9 +200,9 @@
 
 .db-similar-group {
   padding: 0.75rem;
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #30363d;
 }
 
 .db-similar-anchor {
@@ -212,18 +213,18 @@
 }
 
 .db-similar-anchor strong {
-  color: #1f2937;
+  color: var(--text);
 }
 
 .db-similar-call-id {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .db-similar-list {
   margin: 0;
   padding-left: 1.25rem;
-  color: #374151;
+  color: #c9d1d9;
 }
 
 .db-similar-list li {
@@ -233,5 +234,5 @@
 .db-similar-distance {
   margin-left: 0.5rem;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }

@@ -26,21 +26,21 @@ function formatDate(iso) {
 }
 
 const PILL_COLORS = [
-  { bg: '#fef3c7', text: '#92400e', border: '#fde68a' },  // amber
-  { bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe' },  // blue
-  { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' },  // green
-  { bg: '#fce7f3', text: '#9d174d', border: '#fbcfe8' },  // pink
-  { bg: '#ede9fe', text: '#5b21b6', border: '#ddd6fe' },  // purple
-  { bg: '#ffedd5', text: '#9a3412', border: '#fed7aa' },  // orange
-  { bg: '#e0f2fe', text: '#075985', border: '#bae6fd' },  // sky
-  { bg: '#fdf2f8', text: '#831843', border: '#f9a8d4' },  // rose
-  { bg: '#ecfdf5', text: '#065f46', border: '#6ee7b7' },  // emerald
-  { bg: '#fff7ed', text: '#7c2d12', border: '#fdba74' },  // burnt orange
-  { bg: '#f0f9ff', text: '#0c4a6e', border: '#7dd3fc' },  // light blue
-  { bg: '#fafafa', text: '#292524', border: '#d6d3d1' },  // stone
-  { bg: '#f5f3ff', text: '#4c1d95', border: '#c4b5fd' },  // violet
-  { bg: '#ecfeff', text: '#164e63', border: '#67e8f9' },  // cyan
-  { bg: '#fef9c3', text: '#713f12', border: '#fef08a' },  // yellow
+  { bg: 'rgba(245,158,11,0.12)', text: '#fbbf24', border: 'rgba(245,158,11,0.35)' },  // amber
+  { bg: 'rgba(59,130,246,0.12)', text: '#60a5fa', border: 'rgba(59,130,246,0.35)' },  // blue
+  { bg: 'rgba(34,197,94,0.12)', text: '#4ade80', border: 'rgba(34,197,94,0.35)' },   // green
+  { bg: 'rgba(236,72,153,0.12)', text: '#f472b6', border: 'rgba(236,72,153,0.35)' }, // pink
+  { bg: 'rgba(139,92,246,0.12)', text: '#a78bfa', border: 'rgba(139,92,246,0.35)' }, // purple
+  { bg: 'rgba(249,115,22,0.12)', text: '#fb923c', border: 'rgba(249,115,22,0.35)' }, // orange
+  { bg: 'rgba(14,165,233,0.12)', text: '#38bdf8', border: 'rgba(14,165,233,0.35)' }, // sky
+  { bg: 'rgba(244,63,94,0.12)',  text: '#fb7185', border: 'rgba(244,63,94,0.35)' },  // rose
+  { bg: 'rgba(16,185,129,0.12)', text: '#34d399', border: 'rgba(16,185,129,0.35)' }, // emerald
+  { bg: 'rgba(251,146,60,0.12)', text: '#fdba74', border: 'rgba(251,146,60,0.35)' }, // burnt orange
+  { bg: 'rgba(56,189,248,0.12)', text: '#7dd3fc', border: 'rgba(56,189,248,0.35)' }, // light blue
+  { bg: 'rgba(161,161,170,0.12)',text: '#a1a1aa', border: 'rgba(161,161,170,0.35)'},  // stone
+  { bg: 'rgba(167,139,250,0.12)',text: '#c4b5fd', border: 'rgba(167,139,250,0.35)' }, // violet
+  { bg: 'rgba(34,211,238,0.12)', text: '#67e8f9', border: 'rgba(34,211,238,0.35)' }, // cyan
+  { bg: 'rgba(250,204,21,0.12)', text: '#fde047', border: 'rgba(250,204,21,0.35)' }, // yellow
 ];
 
 function indexToColor(colorIndex) {

@@ -177,7 +177,7 @@ def extract_structured_data(transcript: str) -> dict:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
-            max_tokens=1000,
+            max_tokens=2500,
             temperature=0,
         )
     except Exception as e:

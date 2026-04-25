@@ -32,7 +32,7 @@ export function AppShell() {
     return (
       <div className="app">
         <header className="header">
-          <h1>Chipmunk</h1>
+          <h1>Threadform</h1>
           <p>Record calls, get transcripts and summaries, save to Drive.</p>
         </header>
         <div className="auth-section">
@@ -47,7 +47,7 @@ export function AppShell() {
   return (
     <div className={`app ${isAllRecordings ? 'app-all-recordings' : ''}`}>
       <header className={`header ${isAllRecordings ? 'header-all-recordings' : ''}`}>
-        <h1 className="header-brand">Chipmunk</h1>
+        <h1 className="header-brand">Threadform</h1>
         <div className="user-row">
           <Link to="/" className="header-link">All Recordings</Link>
           <Link to="/topic-chains" className="header-link">Topic Chains</Link>

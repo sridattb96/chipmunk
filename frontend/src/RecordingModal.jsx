@@ -30,6 +30,8 @@ export function RecordingModal({ onClose, onSaved }) {
   const animationFrameRef = useRef(null);
   const wsRef = useRef(null);
   const streamRef = useRef(null);
+  const transcriptPartsRef = useRef([]);
+  const reconnectTimerRef = useRef(null);
 
   useEffect(() => {
     getConfig().then((c) => setTranscriptionMode(c.transcriptionMode || 'batch')).catch(() => {});
@@ -102,7 +104,6 @@ export function RecordingModal({ onClose, onSaved }) {
         ? 'audio/webm;codecs=opus'
         : 'audio/webm';
       const recorder = new MediaRecorder(stream);
-      const ws = new WebSocket(wsUrl);
 
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const analyser = audioContext.createAnalyser();
@@ -113,24 +114,23 @@ export function RecordingModal({ onClose, onSaved }) {
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
 
-      let transcriptParts = [];
-      ws.onmessage = (e) => {
+      transcriptPartsRef.current = [];
+
+      const makeOnMessage = () => (e) => {
         try {
           const msg = JSON.parse(e.data);
           if (msg.transcript) {
             if (msg.is_final) {
-              transcriptParts.push(msg.transcript);
-              setLiveTranscript((prev) => (prev ? `${prev} ${msg.transcript}` : msg.transcript));
+              transcriptPartsRef.current.push(msg.transcript);
+              setLiveTranscript(transcriptPartsRef.current.join(' '));
             } else {
-              setLiveTranscript((prev) => {
-                const base = transcriptParts.join(' ');
-                return base ? `${base} ${msg.transcript}` : msg.transcript;
-              });
+              const base = transcriptPartsRef.current.join(' ');
+              setLiveTranscript(base ? `${base} ${msg.transcript}` : msg.transcript);
             }
           }
           if (msg.type === 'done') {
             pendingRecordingRef.current = {
-              transcript: msg.transcript || transcriptParts.join(' '),
+              transcript: msg.transcript || transcriptPartsRef.current.join(' '),
               duration: durationRef.current,
             };
             setIsFinalizing(false);
@@ -151,6 +151,42 @@ export function RecordingModal({ onClose, onSaved }) {
         } catch (_) {}
       };
 
+      // Reconnects the Deepgram WebSocket every ~8.5 min to avoid the 10-min session limit.
+      // Audio keeps flowing from the same MediaRecorder — only the socket is swapped.
+      const performReconnect = () => {
+        const newWsUrl = getStreamTranscribeUrl();
+        if (!newWsUrl || !mediaRecorderRef.current) return;
+
+        const oldWs = wsRef.current;
+        const newWs = new WebSocket(newWsUrl);
+
+        newWs.onmessage = makeOnMessage();
+        newWs.onerror = () => { setUploadError('WebSocket reconnect failed'); setIsFinalizing(false); };
+        newWs.onclose = () => {};
+
+        newWs.onopen = () => {
+          if (mediaRecorderRef.current?.state === 'recording') {
+            mediaRecorderRef.current.ondataavailable = (ev) => {
+              if (ev.data.size > 0 && newWs.readyState === WebSocket.OPEN) {
+                ev.data.arrayBuffer().then((buf) => newWs.send(buf));
+              }
+            };
+          }
+          wsRef.current = newWs;
+
+          if (oldWs?.readyState === WebSocket.OPEN) {
+            // Null out handlers before CloseStream so its 'done' doesn't end the recording
+            oldWs.onmessage = () => {};
+            oldWs.onclose = () => {};
+            oldWs.send(JSON.stringify({ type: 'CloseStream' }));
+            setTimeout(() => { if (oldWs.readyState !== WebSocket.CLOSED) oldWs.close(); }, 2000);
+          }
+        };
+      };
+
+      const ws = new WebSocket(wsUrl);
+
+      ws.onmessage = makeOnMessage();
       ws.onerror = () => {
         setUploadError('WebSocket error');
         setIsFinalizing(false);
@@ -179,7 +215,32 @@ export function RecordingModal({ onClose, onSaved }) {
       timerRef.current = setInterval(() => {
         durationRef.current += 1;
         setDuration((d) => d + 1);
+        if (durationRef.current >= 1800) {
+          // Auto-stop at 30 min
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+          if (reconnectTimerRef.current) {
+            clearInterval(reconnectTimerRef.current);
+            reconnectTimerRef.current = null;
+          }
+          setIsFinalizing(true);
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({ type: 'CloseStream' }));
+          }
+          if (mediaRecorderRef.current?.state !== 'inactive') {
+            mediaRecorderRef.current?.stop();
+            mediaRecorderRef.current = null;
+          }
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach((t) => t.stop());
+            streamRef.current = null;
+          }
+          setIsRecording(false);
+        }
       }, 1000);
+
+      // Reconnect every 8.5 min before Deepgram's 10-min session limit
+      reconnectTimerRef.current = setInterval(performReconnect, 510_000);
     } catch (err) {
       console.error(err);
       alert('Could not access microphone. Please allow microphone access.');
@@ -195,6 +256,10 @@ export function RecordingModal({ onClose, onSaved }) {
   }, [transcriptionMode, startRecordingBatch, startRecordingStream]);
 
   const stopRecording = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearInterval(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
     if (transcriptionMode === 'stream') {
       setIsFinalizing(true);
       if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -253,6 +318,10 @@ export function RecordingModal({ onClose, onSaved }) {
   };
 
   const handleClose = () => {
+    if (reconnectTimerRef.current) {
+      clearInterval(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close();
       wsRef.current = null;
@@ -366,7 +435,7 @@ export function RecordingModal({ onClose, onSaved }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           position: 'relative',
-          backgroundColor: '#ffffff',
+          backgroundColor: 'var(--surface)',
           borderRadius: 12,
           width: step === 1 && transcriptionMode === 'stream' ? 720 : 400,
           maxWidth: '95vw',

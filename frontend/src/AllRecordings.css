@@ -1,27 +1,22 @@
-/* All Recordings page - light theme, full width */
+/* All Recordings page - dark theme, full width */
 
-/* Variables for All Recordings light theme */
 .all-recordings-page {
   font-family: var(--font-sn-pro);
-  --ar-bg: #fafafa;
-  --ar-surface: #ffffff;
-  --ar-border: #e5e7eb;
-  --ar-text: #374151;
-  --ar-text-muted: #6b7280;
-  --ar-text-title: #1f2937;
-  --ar-accent: oklch(68% 0.18 133);
-  --ar-accent-hover: oklch(63% 0.18 133);
+  --ar-bg: #0f1419;
+  --ar-surface: #1a2332;
+  --ar-border: #30363d;
+  --ar-text: #e6edf3;
+  --ar-text-muted: #8b949e;
+  --ar-text-title: #e6edf3;
+  --ar-accent: #991E0A;
+  --ar-accent-hover: #7a1708;
 }
 
 .all-recordings {
   width: 100%;
   max-width: 100%;
   padding: 2rem 2rem 1.5rem;
-  background-color: var(--ar-bg);
-  background-image:
-    radial-gradient(ellipse at 50% 40%, transparent 30%, var(--ar-bg) 85%),
-    radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px);
-  background-size: cover, 28px 28px;
+  background: transparent;
   height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
@@ -141,8 +136,8 @@
 .item-waveform {
   grid-column: 1;
   grid-row: 1 / 3;
-  color: var(--ar-text-muted);
-  opacity: 0.5;
+  color: #991E0A;
+  opacity: 0.85;
   align-self: center;
   flex-shrink: 0;
 }
@@ -152,12 +147,12 @@
 }
 
 .all-recordings-item:hover {
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .all-recordings-item.selected {
-  background: oklch(68% 0.18 133 / 0.07);
-  border-left: 3px solid oklch(68% 0.18 133);
+  background: rgba(153, 30, 10, 0.07);
+  border-left: 3px solid #991E0A;
   padding-left: calc(1.25rem - 3px);
 }
 
@@ -329,7 +324,7 @@
 }
 
 .detail-actions .btn-secondary:hover:not(:disabled) {
-  background: #f9fafb;
+  background: #21262d;
 }
 
 .detail-actions {
