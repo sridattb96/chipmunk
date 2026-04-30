@@ -240,7 +240,7 @@ export function RecordingModal({ onClose, onSaved }) {
       }, 1000);
 
       // Reconnect every 8.5 min before Deepgram's 10-min session limit
-      reconnectTimerRef.current = setInterval(performReconnect, 510_000);
+      reconnectTimerRef.current = setInterval(performReconnect, 5_000); // TEST: was 510_000, revert after testing
     } catch (err) {
       console.error(err);
       alert('Could not access microphone. Please allow microphone access.');

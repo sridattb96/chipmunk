@@ -50,8 +50,7 @@ export function AppShell() {
         <h1 className="header-brand">Threadform</h1>
         <div className="user-row">
           <Link to="/" className="header-link">All Recordings</Link>
-          <Link to="/topic-chains" className="header-link">Topic Chains</Link>
-          <Link to="/db" className="header-link">DB</Link>
+          <Link to="/topic-chains" className="header-link">Threads</Link>
           <button className="btn btn-text" onClick={logout}>
             Sign out
           </button>

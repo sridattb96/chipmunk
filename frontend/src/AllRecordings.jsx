@@ -71,7 +71,7 @@ function WaveformIcon() {
   return (
     <svg width="29" height="14" viewBox="0 0 29 14" className="item-waveform" aria-hidden>
       {WAVEFORM_BARS.map((h, i) => (
-        <rect key={i} x={i * 3} y={(14 - h) / 2} width="2" height={h} rx="1" />
+        <rect key={i} x={i * 3} y={(14 - h) / 2} width="2" height={h} rx="1" fill="#991E0A" />
       ))}
     </svg>
   );
@@ -222,22 +222,7 @@ export function AllRecordings() {
                 <h1 className="detail-title">{detail.name}</h1>
                 <p className="detail-header-meta">{formatDetailDate(detail.created_at)} · {detail.duration}</p>
               </div>
-              <div className="detail-audio-placeholder" aria-hidden>
-                <div className="audio-waveform-bars">
-                  {Array.from({ length: 40 }, (_, i) => {
-                    const h = 8 + Math.abs(Math.sin(i * 1.7 + 1) * 22 + Math.sin(i * 0.9) * 10);
-                    return <span key={i} className={`audio-bar ${i < 14 ? 'audio-bar-played' : ''}`} style={{ height: `${h}px` }} />;
-                  })}
-                </div>
-                <div className="audio-controls-row">
-                  <div className="audio-play-btn" />
-                  <div className="audio-progress-track">
-                    <div className="audio-progress-fill" />
-                  </div>
-                  <span className="audio-time">0:00 / {detail.duration}</span>
-                </div>
-              </div>
-              <div className="detail-content">
+<div className="detail-content">
                 <section>
                   <h2 className="detail-heading">Summary</h2>
                   <p className="detail-summary">{detail.summary}</p>

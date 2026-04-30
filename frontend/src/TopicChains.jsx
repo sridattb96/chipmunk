@@ -48,7 +48,7 @@ export function TopicChains() {
     return (
       <div className="topic-chains">
         <div className="topic-chains-header">
-          <h1>Topic Chains</h1>
+          <h1>Threads</h1>
           <Link to="/" className="topic-chains-back">← Back</Link>
         </div>
         <div className="topic-chains-loading">Loading...</div>
@@ -60,7 +60,7 @@ export function TopicChains() {
     return (
       <div className="topic-chains">
         <div className="topic-chains-header">
-          <h1>Topic Chains</h1>
+          <h1>Threads</h1>
           <Link to="/" className="topic-chains-back">← Back</Link>
         </div>
         <div className="topic-chains-error">{error}</div>
@@ -71,7 +71,7 @@ export function TopicChains() {
   return (
     <div className="topic-chains">
       <div className="topic-chains-header">
-        <h1>Topic Chains</h1>
+        <h1>Threads</h1>
         <Link to="/" className="topic-chains-back">← Back</Link>
       </div>
       <div className="topic-chains-layout">
@@ -99,7 +99,7 @@ export function TopicChains() {
         <main className="topic-chains-main">
           <h2>
             <i className="fa-sharp fa-solid fa-clipboard-list" aria-hidden />
-            <span>Topic Chain View</span>
+            <span>Thread View</span>
           </h2>
           {!selectedGroup ? (
             <p className="topic-chains-empty">Select a topic group to view the call chain.</p>
@@ -120,6 +120,7 @@ export function TopicChains() {
                     <div className="topic-chains-node">
                       <div className="topic-chains-node-circle">
                         <span className="topic-chains-node-name">{rec.name}</span>
+                        <Link to={`/recordings/${recId}`} className="topic-chains-node-link">View →</Link>
                       </div>
                       <div className="topic-chains-node-summary">
                         {rec.summary || 'No summary.'}

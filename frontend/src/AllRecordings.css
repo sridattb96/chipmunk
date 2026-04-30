@@ -136,8 +136,6 @@
 .item-waveform {
   grid-column: 1;
   grid-row: 1 / 3;
-  color: #991E0A;
-  opacity: 0.85;
   align-self: center;
   flex-shrink: 0;
 }

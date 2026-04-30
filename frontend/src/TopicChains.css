@@ -189,6 +189,7 @@
 
 .topic-chains-node-circle {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 140px;
@@ -198,6 +199,18 @@
   border-radius: 50%;
   background: #21262d;
   border: 2px solid #30363d;
+}
+
+.topic-chains-node-link {
+  font-size: 0.75rem;
+  color: #8b949e;
+  text-decoration: none;
+  margin-top: 0.25rem;
+}
+
+.topic-chains-node-link:hover {
+  color: #c9d1d9;
+  text-decoration: underline;
 }
 
 .topic-chains-node-name {
