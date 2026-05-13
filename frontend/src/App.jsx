@@ -1,72 +1,51 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { AppShell } from './AppShell';
 import { AllRecordings } from './AllRecordings';
 import { DbSnapshot } from './DbSnapshot';
 import { TopicChains } from './TopicChains';
+import { LandingPage } from './LandingPage';
 import './App.css';
 
-const AUTH_URL = `${import.meta.env.VITE_API_URL || ''}/auth/google`;
-
-function UnauthenticatedApp() {
-  return (
-    <div className="app">
-      <header className="header">
-        <h1>Threadform</h1>
-        <p>Record calls, get transcripts and summaries, save to Drive.</p>
-      </header>
-      <div className="auth-section">
-        <a href={AUTH_URL} className="btn btn-primary btn-google">
-          Sign in with Google
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function AuthenticatedRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<AppShell />}>
-        <Route index element={<AllRecordings />} />
-        <Route path="recordings/:id" element={<AllRecordings />} />
-        <Route path="db" element={<DbSnapshot />} />
-        <Route path="topic-chains" element={<TopicChains />} />
-      </Route>
-      <Route path="/all" element={<Navigate to="/" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
-
-function App() {
+function AppRoutes() {
   const { loading, setToken, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     if (token) {
       setToken(token);
-      window.history.replaceState({}, '', window.location.pathname);
+      window.history.replaceState({}, '', '/recordings');
+      navigate('/recordings', { replace: true });
     }
-  }, [setToken]);
+  }, [setToken, navigate]);
 
   if (loading) {
-    return (
-      <div className="app">
-        <div className="loading">Loading...</div>
-      </div>
-    );
+    return <div className="app"><div className="loading">Loading...</div></div>;
   }
 
-  if (!isAuthenticated) {
-    return <UnauthenticatedApp />;
-  }
+  const authGuard = isAuthenticated ? <AppShell /> : <Navigate to="/" replace />;
 
   return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route element={authGuard}>
+        <Route path="/recordings" element={<AllRecordings />} />
+        <Route path="/recordings/:id" element={<AllRecordings />} />
+        <Route path="/db" element={<DbSnapshot />} />
+        <Route path="/topic-chains" element={<TopicChains />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
     <BrowserRouter>
-      <AuthenticatedRoutes />
+      <AppRoutes />
     </BrowserRouter>
   );
 }

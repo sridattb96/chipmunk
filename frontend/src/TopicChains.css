@@ -42,7 +42,7 @@
   text-align: center;
   color: #f85149;
   background: rgba(248, 81, 73, 0.1);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .topic-chains-layout {
@@ -60,8 +60,8 @@
 
 .topic-chains-sidebar {
   background: var(--surface);
-  border: 1px solid #30363d;
-  border-radius: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 0;
   padding: 1.25rem;
   height: fit-content;
 }
@@ -71,7 +71,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--text);
-  border-bottom: 1px solid #30363d;
+  border-bottom: 1px solid #2d2620;
   padding-bottom: 0.5rem;
 }
 
@@ -80,7 +80,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--text);
-  border-bottom: 1px solid #30363d;
+  border-bottom: 1px solid #2d2620;
   padding-bottom: 0.75rem;
   display: flex;
   align-items: center;
@@ -104,8 +104,8 @@
   margin-bottom: 0.5rem;
   text-align: left;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid #30363d;
-  border-radius: 8px;
+  border: 1px solid #2d2620;
+  border-radius: 0;
   cursor: pointer;
   font-size: 0.9rem;
   color: var(--text);
@@ -116,9 +116,9 @@
 }
 
 .topic-chains-item-active {
-  background: rgba(153, 30, 10, 0.08);
-  border-color: #991E0A;
-  color: #c9533e;
+  background: rgba(197, 90, 60, 0.1);
+  border-color: #c55a3c;
+  color: #c55a3c;
 }
 
 .topic-chains-item-title {
@@ -134,13 +134,13 @@
 }
 
 .topic-chains-item-active .topic-chains-item-date {
-  color: #b84530;
+  color: #a84830;
 }
 
 .topic-chains-main {
   background: var(--surface);
-  border: 1px solid #30363d;
-  border-radius: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 0;
   padding: 1.5rem;
 }
 
@@ -150,7 +150,7 @@
   gap: 1.5rem;
   padding: 0 0 0.5rem 0;
   margin-bottom: 0.25rem;
-  border-bottom: 1px solid #30363d;
+  border-bottom: 1px solid #2d2620;
 }
 
 .topic-chains-col-headers span {
@@ -179,7 +179,7 @@
   gap: 1.5rem;
   width: 100%;
   padding: 1rem 0;
-  border-bottom: 1px solid #21262d;
+  border-bottom: 1px solid #251f18;
   align-items: start;
 }
 
@@ -197,19 +197,19 @@
   min-width: 140px;
   min-height: 140px;
   border-radius: 50%;
-  background: #21262d;
-  border: 2px solid #30363d;
+  background: #251f18;
+  border: 2px solid #2d2620;
 }
 
 .topic-chains-node-link {
   font-size: 0.75rem;
-  color: #8b949e;
+  color: #8a7e6d;
   text-decoration: none;
   margin-top: 0.25rem;
 }
 
 .topic-chains-node-link:hover {
-  color: #c9d1d9;
+  color: #ede4d2;
   text-decoration: underline;
 }
 
@@ -224,13 +224,13 @@
 
 .topic-chains-node-summary {
   font-size: 0.9rem;
-  color: #c9d1d9;
+  color: #ede4d2;
   line-height: 1.5;
 }
 
 .topic-chains-node-decisions {
   font-size: 0.875rem;
-  color: #c9d1d9;
+  color: #ede4d2;
 }
 
 .topic-chains-node-decisions ul {

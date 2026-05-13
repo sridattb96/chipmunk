@@ -71,7 +71,7 @@ function WaveformIcon() {
   return (
     <svg width="29" height="14" viewBox="0 0 29 14" className="item-waveform" aria-hidden>
       {WAVEFORM_BARS.map((h, i) => (
-        <rect key={i} x={i * 3} y={(14 - h) / 2} width="2" height={h} rx="1" fill="#991E0A" />
+        <rect key={i} x={i * 3} y={(14 - h) / 2} width="2" height={h} rx="1" fill="#c55a3c" />
       ))}
     </svg>
   );
@@ -174,7 +174,7 @@ export function AllRecordings() {
     <div className="all-recordings-page">
       <div className="all-recordings">
         <div className="all-recordings-header">
-          <h1 className="all-recordings-title">All Recordings</h1>
+          <h1 className="all-recordings-title">Recordings</h1>
           <button
             type="button"
             className="btn btn-primary all-recordings-new-btn"
